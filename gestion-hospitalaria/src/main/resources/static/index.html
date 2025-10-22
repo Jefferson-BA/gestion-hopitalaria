@@ -1,0 +1,1986 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión Hospitalaria</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .status-bar {
+            background: #f5f5f5;
+            padding: 15px 30px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9em;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-indicator.online {
+            background: #28a745;
+        }
+
+        .status-indicator.offline {
+            background: #dc3545;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            border: 2px solid #e9ecef;
+            background: #ffffff;
+            color: #6c757d;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+            font-weight: 500;
+            margin: 0 5px;
+        }
+
+        .tab-btn.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .tab-btn:hover {
+            background: #f8f9fa;
+            border-color: #007bff;
+            color: #007bff;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+        }
+
+        .form-section h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+            border: 2px solid #007bff;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+            border-color: #0056b3;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border: 2px solid #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+            border-color: #545b62;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+            border: 2px solid #dc3545;
+            padding: 8px 16px;
+            font-size: 0.9em;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+            border-color: #c82333;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+            border: 2px solid #28a745;
+            padding: 8px 16px;
+            font-size: 0.9em;
+        }
+
+        .btn-success:hover {
+            background: #1e7e34;
+            border-color: #1e7e34;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+            padding: 8px 16px;
+            font-size: 0.9em;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th {
+            background: #f5f5f5;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tr:hover {
+            background: #f9f9f9;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+            animation: slideDown 0.3s;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #bee5eb;
+        }
+
+        .spinner {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .spinner.show {
+            display: block;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .badge-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .status-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            table {
+                font-size: 0.9em;
+            }
+
+            th, td {
+                padding: 8px 10px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Sistema de Gestión Hospitalaria</h1>
+        <p>Administración completa de pacientes, médicos, citas, consultas y hospitalización</p>
+    </div>
+
+    <div class="status-bar">
+        <div class="status-item">
+            <span class="status-indicator online" id="backendStatus"></span>
+        </div>
+        <div class="status-item">
+            <span class="status-indicator online"></span>
+        </div>
+        <div class="status-item">
+        </div>
+    </div>
+
+    <div class="content">
+        <div id="alertContainer"></div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('pacientes')">Pacientes</button>
+            <button class="tab-btn" onclick="switchTab('medicos')">Médicos</button>
+            <button class="tab-btn" onclick="switchTab('especialidades')">Especialidades</button>
+            <button class="tab-btn" onclick="switchTab('citas')">Citas</button>
+            <button class="tab-btn" onclick="switchTab('habitaciones')">Habitaciones</button>
+            <button class="tab-btn" onclick="switchTab('hospitalizacion')">Hospitalización</button>
+        </div>
+
+        <!-- TAB: PACIENTES -->
+        <div id="pacientes" class="tab-content active">
+            <h2>Gestión de Pacientes</h2>
+
+            <div class="form-section">
+                <h3>Registrar Nuevo Paciente</h3>
+                <form id="formPaciente" onsubmit="crearPaciente(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>DNI (8 dígitos) *</label>
+                            <input type="text" id="dni" placeholder="12345678" maxlength="8" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Nombres *</label>
+                            <input type="text" id="nombres" placeholder="Juan Carlos" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Apellidos *</label>
+                            <input type="text" id="apellidos" placeholder="Pérez García" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha de Nacimiento *</label>
+                            <input type="date" id="fechaNacimiento" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Sexo *</label>
+                            <select id="sexo" required>
+                                <option value="">-- Seleccionar --</option>
+                                <option value="M">Masculino</option>
+                                <option value="F">Femenino</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Teléfono (9 dígitos)</label>
+                            <input type="text" id="telefono" placeholder="987654321" maxlength="9">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="correo" placeholder="paciente@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Dirección</label>
+                            <input type="text" id="direccion" placeholder="Av. Principal 123">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">Registrar Paciente</button>
+                </form>
+            </div>
+
+            <h3 style="margin-top: 30px; margin-bottom: 15px;">Lista de Pacientes</h3>
+            <div id="spinnerPacientes" class="spinner">
+                <div class="loading"></div>
+            </div>
+            <div id="tablaPacientes" class="table-responsive"></div>
+        </div>
+
+        <!-- TAB: MÉDICOS -->
+        <div id="medicos" class="tab-content">
+            <h2>Gestión de Médicos</h2>
+
+            <div class="form-section">
+                <h3>Registrar Nuevo Médico</h3>
+                <form id="formMedico" onsubmit="crearMedico(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Nombres *</label>
+                            <input type="text" id="medicoNombres" placeholder="Dr. Juan Carlos" required>
+            </div>
+                        <div class="form-group">
+                            <label>Apellidos *</label>
+                            <input type="text" id="medicoApellidos" placeholder="Pérez García" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Colegiatura *</label>
+                            <input type="text" id="colegiatura" placeholder="12345" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Teléfono (9 dígitos)</label>
+                            <input type="text" id="medicoTelefono" placeholder="987654321" maxlength="9">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="medicoCorreo" placeholder="medico@hospital.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Estado</label>
+                            <select id="medicoEstado">
+                                <option value="true">Activo</option>
+                                <option value="false">Inactivo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">Registrar Médico</button>
+                </form>
+            </div>
+
+            <h3 style="margin-top: 30px; margin-bottom: 15px;">Lista de Médicos</h3>
+            <div id="spinnerMedicos" class="spinner">
+                <div class="loading"></div>
+            </div>
+            <div id="tablaMedicos" class="table-responsive"></div>
+        </div>
+
+        <!-- TAB: ESPECIALIDADES -->
+        <div id="especialidades" class="tab-content">
+            <h2>Gestión de Especialidades</h2>
+
+            <div class="form-section">
+                <h3>Registrar Nueva Especialidad</h3>
+                <form id="formEspecialidad" onsubmit="crearEspecialidad(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Nombre *</label>
+                            <input type="text" id="especialidadNombre" placeholder="Cardiología" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Descripción</label>
+                            <input type="text" id="especialidadDescripcion" placeholder="Especialidad en enfermedades del corazón">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">Registrar Especialidad</button>
+                </form>
+            </div>
+
+            <h3 style="margin-top: 30px; margin-bottom: 15px;">Lista de Especialidades</h3>
+            <div id="spinnerEspecialidades" class="spinner">
+                <div class="loading"></div>
+            </div>
+            <div id="tablaEspecialidades" class="table-responsive"></div>
+        </div>
+
+        <!-- TAB: CITAS -->
+        <div id="citas" class="tab-content">
+            <h2>Gestión de Citas Médicas</h2>
+
+            <div class="form-section">
+                <h3>Programar Nueva Cita</h3>
+                <form id="formCita" onsubmit="crearCita(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Paciente *</label>
+                            <select id="citaPaciente" required>
+                                <option value="">-- Seleccionar Paciente --</option>
+                            </select>
+            </div>
+                        <div class="form-group">
+                            <label>Médico *</label>
+                            <select id="citaMedico" required>
+                                <option value="">-- Seleccionar Médico --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Fecha *</label>
+                            <input type="date" id="citaFecha" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Hora *</label>
+                            <input type="time" id="citaHora" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Motivo de la Cita *</label>
+                        <input type="text" id="citaMotivo" placeholder="Consulta general" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">Programar Cita</button>
+                </form>
+            </div>
+
+            <h3 style="margin-top: 30px; margin-bottom: 15px;">Lista de Citas</h3>
+            <div id="spinnerCitas" class="spinner">
+                <div class="loading"></div>
+            </div>
+            <div id="tablaCitas" class="table-responsive"></div>
+        </div>
+
+        <!-- TAB: HABITACIONES -->
+        <div id="habitaciones" class="tab-content">
+            <h2>Gestión de Habitaciones</h2>
+
+            <div class="form-section">
+                <h3>Registrar Nueva Habitación</h3>
+                <form id="formHabitacion" onsubmit="crearHabitacion(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Número de Habitación *</label>
+                            <input type="text" id="habitacionNumero" placeholder="101" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo *</label>
+                            <select id="habitacionTipo" required>
+                                <option value="">-- Seleccionar Tipo --</option>
+                                <option value="UCI">UCI</option>
+                                <option value="general">General</option>
+                                <option value="emergencia">Emergencia</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Estado</label>
+                        <select id="habitacionEstado">
+                            <option value="disponible">Disponible</option>
+                            <option value="ocupada">Ocupada</option>
+                            <option value="mantenimiento">Mantenimiento</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">Registrar Habitación</button>
+                </form>
+            </div>
+
+            <h3 style="margin-top: 30px; margin-bottom: 15px;">Lista de Habitaciones</h3>
+            <div id="spinnerHabitaciones" class="spinner">
+                <div class="loading"></div>
+            </div>
+            <div id="tablaHabitaciones" class="table-responsive"></div>
+        </div>
+
+        <!-- TAB: HOSPITALIZACIÓN -->
+        <div id="hospitalizacion" class="tab-content">
+            <h2>Gestión de Hospitalización</h2>
+
+            <div class="form-section">
+                <h3>Registrar Nueva Hospitalización</h3>
+                <form id="formHospitalizacion" onsubmit="crearHospitalizacion(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Paciente *</label>
+                            <select id="hospPaciente" required>
+                                <option value="">-- Seleccionar Paciente --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Habitación *</label>
+                            <select id="hospHabitacion" required>
+                                <option value="">-- Seleccionar Habitación --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Fecha de Ingreso *</label>
+                            <input type="date" id="hospFechaIngreso" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Estado</label>
+                            <select id="hospEstado">
+                                <option value="activo">Activo</option>
+                                <option value="dado de alta">Dado de Alta</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Diagnóstico de Ingreso</label>
+                        <textarea id="hospDiagnostico" placeholder="Descripción del diagnóstico" rows="3"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">Registrar Hospitalización</button>
+                </form>
+            </div>
+
+            <h3 style="margin-top: 30px; margin-bottom: 15px;">Lista de Hospitalizaciones</h3>
+            <div id="spinnerHospitalizaciones" class="spinner">
+                <div class="loading"></div>
+            </div>
+            <div id="tablaHospitalizaciones" class="table-responsive"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+            const API_URL = 'http://localhost:8082/api';
+
+    // Verificar conexión del backend
+    function verificarBackend() {
+        fetch(`${API_URL}/pacientes`)
+            .then(response => {
+                document.getElementById('backendStatus').className = 'status-indicator online';
+                document.getElementById('backendText').textContent = 'En línea';
+            })
+            .catch(error => {
+                document.getElementById('backendStatus').className = 'status-indicator offline';
+                document.getElementById('backendText').textContent = 'Desconectado';
+            });
+    }
+
+    // Cambiar tabs
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+        document.getElementById(tabName).classList.add('active');
+        event.target.classList.add('active');
+
+        // Cargar datos según el tab
+        switch(tabName) {
+            case 'pacientes':
+            listarPacientes();
+                break;
+            case 'medicos':
+                listarMedicos();
+                break;
+            case 'especialidades':
+                listarEspecialidades();
+                break;
+            case 'citas':
+                cargarDatosCitas();
+                listarCitas();
+                break;
+            case 'habitaciones':
+                listarHabitaciones();
+                break;
+            case 'hospitalizacion':
+                cargarDatosHospitalizacion();
+                listarHospitalizaciones();
+                break;
+        }
+    }
+
+    // Mostrar alerta
+    function mostrarAlerta(mensaje, tipo = 'info') {
+        const alertContainer = document.getElementById('alertContainer');
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${tipo} show`;
+        alertDiv.innerHTML = `<strong>${tipo.toUpperCase()}:</strong> ${mensaje}`;
+        alertContainer.innerHTML = '';
+        alertContainer.appendChild(alertDiv);
+
+        setTimeout(() => {
+            alertDiv.classList.remove('show');
+        }, 5000);
+    }
+
+    // ========== PACIENTES ==========
+    async function crearPaciente(event) {
+        event.preventDefault();
+
+        const paciente = {
+            dni: document.getElementById('dni').value,
+            nombres: document.getElementById('nombres').value,
+            apellidos: document.getElementById('apellidos').value,
+            fechaNacimiento: document.getElementById('fechaNacimiento').value,
+            sexo: document.getElementById('sexo').value,
+            telefono: document.getElementById('telefono').value,
+            correo: document.getElementById('correo').value,
+            direccion: document.getElementById('direccion').value
+        };
+
+        try {
+            const response = await fetch(`${API_URL}/pacientes`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(paciente)
+            });
+
+            if (response.ok) {
+                mostrarAlerta(' Paciente registrado exitosamente', 'success');
+                document.getElementById('formPaciente').reset();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                listarPacientes();
+            } else {
+                const error = await response.json();
+                mostrarAlerta(' Error: ' + (error.mensaje || 'No se pudo registrar'), 'error');
+            }
+        } catch (error) {
+            mostrarAlerta(' Error de conexión: ' + error.message, 'error');
+        }
+    }
+
+    async function listarPacientes() {
+        const tablaPacientes = document.getElementById('tablaPacientes');
+        const spinner = document.getElementById('spinnerPacientes');
+
+        spinner.classList.add('show');
+        tablaPacientes.innerHTML = '';
+
+        try {
+            const response = await fetch(`${API_URL}/pacientes`);
+            const pacientes = await response.json();
+
+            spinner.classList.remove('show');
+
+            if (pacientes.length === 0) {
+                tablaPacientes.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📄</div>
+                            <p>No hay pacientes registrados</p>
+                        </div>
+                    `;
+                return;
+            }
+
+            let html = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>DNI</th>
+                                <th>Nombres</th>
+                                <th>Apellidos</th>
+                                <th>Sexo</th>
+                                <th>Teléfono</th>
+                                <th>Email</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+            pacientes.forEach(p => {
+                html += `
+                        <tr>
+                            <td>#${p.idPaciente}</td>
+                            <td>${p.dni}</td>
+                            <td>${p.nombres}</td>
+                            <td>${p.apellidos}</td>
+                            <td>${p.sexo === 'M' ? 'Masculino' : 'Femenino'}</td>
+                            <td>${p.telefono || '-'}</td>
+                            <td>${p.correo || '-'}</td>
+                            <td>
+                                <span class="badge ${p.estado ? 'badge-success' : 'badge-danger'}">
+                                    ${p.estado ? ' Activo' : ' Inactivo'}
+                                </span>
+                            </td>
+                            <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-secondary" onclick="editarPaciente(${p.idPaciente})">Editar</button>
+                                <button class="btn btn-danger" onclick="eliminarPaciente(${p.idPaciente})">Eliminar</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            tablaPacientes.innerHTML = html;
+
+        } catch (error) {
+            spinner.classList.remove('show');
+            mostrarAlerta(' Error al cargar pacientes: ' + error.message, 'error');
+        }
+    }
+
+    // ========== MÉDICOS ==========
+    async function crearMedico(event) {
+        event.preventDefault();
+
+        const medico = {
+            nombres: document.getElementById('medicoNombres').value,
+            apellidos: document.getElementById('medicoApellidos').value,
+            colegiatura: document.getElementById('colegiatura').value,
+            telefono: document.getElementById('medicoTelefono').value,
+            correo: document.getElementById('medicoCorreo').value,
+            estado: document.getElementById('medicoEstado').value === 'true'
+        };
+
+        try {
+            const response = await fetch(`${API_URL}/medicos`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(medico)
+            });
+
+            if (response.ok) {
+                mostrarAlerta(' Médico registrado exitosamente', 'success');
+                document.getElementById('formMedico').reset();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                listarMedicos();
+            } else {
+                const error = await response.json();
+                mostrarAlerta(' Error: ' + (error.mensaje || 'No se pudo registrar'), 'error');
+            }
+        } catch (error) {
+            mostrarAlerta(' Error de conexión: ' + error.message, 'error');
+        }
+    }
+
+    async function listarMedicos() {
+        const tablaMedicos = document.getElementById('tablaMedicos');
+        const spinner = document.getElementById('spinnerMedicos');
+
+        spinner.classList.add('show');
+        tablaMedicos.innerHTML = '';
+
+        try {
+            const response = await fetch(`${API_URL}/medicos`);
+            const medicos = await response.json();
+
+            spinner.classList.remove('show');
+
+            if (medicos.length === 0) {
+                tablaMedicos.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon"></div>
+                        <p>No hay médicos registrados</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombres</th>
+                            <th>Apellidos</th>
+                            <th>Colegiatura</th>
+                            <th>Teléfono</th>
+                            <th>Email</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            medicos.forEach(m => {
+                html += `
+                    <tr>
+                        <td>#${m.idMedico}</td>
+                        <td>${m.nombres}</td>
+                        <td>${m.apellidos}</td>
+                        <td>${m.colegiatura}</td>
+                        <td>${m.telefono || '-'}</td>
+                        <td>${m.correo || '-'}</td>
+                        <td>
+                            <span class="badge ${m.estado ? 'badge-success' : 'badge-danger'}">
+                                ${m.estado ? ' Activo' : ' Inactivo'}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-secondary" onclick="editarMedico(${m.idMedico})">Editar</button>
+                                <button class="btn btn-danger" onclick="eliminarMedico(${m.idMedico})">Eliminar</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            tablaMedicos.innerHTML = html;
+
+        } catch (error) {
+            spinner.classList.remove('show');
+            mostrarAlerta(' Error al cargar médicos: ' + error.message, 'error');
+        }
+    }
+
+    // ========== ESPECIALIDADES ==========
+    async function crearEspecialidad(event) {
+        event.preventDefault();
+
+        const especialidad = {
+            nombre: document.getElementById('especialidadNombre').value,
+            descripcion: document.getElementById('especialidadDescripcion').value
+        };
+
+        try {
+            const response = await fetch(`${API_URL}/especialidades`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(especialidad)
+            });
+
+            if (response.ok) {
+                mostrarAlerta(' Especialidad registrada exitosamente', 'success');
+                document.getElementById('formEspecialidad').reset();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                listarEspecialidades();
+            } else {
+                const error = await response.json();
+                mostrarAlerta(' Error: ' + (error.mensaje || 'No se pudo registrar'), 'error');
+            }
+        } catch (error) {
+            mostrarAlerta(' Error de conexión: ' + error.message, 'error');
+        }
+    }
+
+    async function listarEspecialidades() {
+        const tablaEspecialidades = document.getElementById('tablaEspecialidades');
+        const spinner = document.getElementById('spinnerEspecialidades');
+
+        spinner.classList.add('show');
+        tablaEspecialidades.innerHTML = '';
+
+        try {
+            const response = await fetch(`${API_URL}/especialidades`);
+            const especialidades = await response.json();
+
+            spinner.classList.remove('show');
+
+            if (especialidades.length === 0) {
+                tablaEspecialidades.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon"></div>
+                        <p>No hay especialidades registradas</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            especialidades.forEach(e => {
+                html += `
+                    <tr>
+                        <td>#${e.idEspecialidad}</td>
+                        <td>${e.nombre}</td>
+                        <td>${e.descripcion || '-'}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-secondary" onclick="editarEspecialidad(${e.idEspecialidad})">Editar</button>
+                                <button class="btn btn-danger" onclick="eliminarEspecialidad(${e.idEspecialidad})">Eliminar</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            tablaEspecialidades.innerHTML = html;
+
+        } catch (error) {
+            spinner.classList.remove('show');
+            mostrarAlerta(' Error al cargar especialidades: ' + error.message, 'error');
+        }
+    }
+
+    // ========== CITAS ==========
+    async function cargarDatosCitas() {
+        // Cargar pacientes
+        try {
+            const response = await fetch(`${API_URL}/pacientes`);
+            const pacientes = await response.json();
+            const select = document.getElementById('citaPaciente');
+            select.innerHTML = '<option value="">-- Seleccionar Paciente --</option>';
+            pacientes.forEach(p => {
+                select.innerHTML += `<option value="${p.idPaciente}">${p.nombres} ${p.apellidos}</option>`;
+            });
+        } catch (error) {
+            console.error('Error al cargar pacientes:', error);
+        }
+
+        // Cargar médicos
+        try {
+            const response = await fetch(`${API_URL}/medicos`);
+            const medicos = await response.json();
+            const select = document.getElementById('citaMedico');
+            select.innerHTML = '<option value="">-- Seleccionar Médico --</option>';
+            medicos.forEach(m => {
+                select.innerHTML += `<option value="${m.idMedico}">Dr. ${m.nombres} ${m.apellidos}</option>`;
+            });
+        } catch (error) {
+            console.error('Error al cargar médicos:', error);
+        }
+    }
+
+    async function crearCita(event) {
+        event.preventDefault();
+
+        const cita = {
+            idPaciente: parseInt(document.getElementById('citaPaciente').value),
+            idMedico: parseInt(document.getElementById('citaMedico').value),
+            fecha: document.getElementById('citaFecha').value,
+            hora: document.getElementById('citaHora').value,
+            motivo: document.getElementById('citaMotivo').value,
+            estado: 'programada'
+        };
+
+        try {
+            const response = await fetch(`${API_URL}/citas`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(cita)
+            });
+
+            if (response.ok) {
+                mostrarAlerta(' Cita programada exitosamente', 'success');
+                document.getElementById('formCita').reset();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                listarCitas();
+            } else {
+                const error = await response.json();
+                mostrarAlerta(' Error: ' + (error.mensaje || 'No se pudo programar'), 'error');
+            }
+        } catch (error) {
+            mostrarAlerta(' Error de conexión: ' + error.message, 'error');
+        }
+    }
+
+    async function listarCitas() {
+        const tablaCitas = document.getElementById('tablaCitas');
+        const spinner = document.getElementById('spinnerCitas');
+
+        spinner.classList.add('show');
+        tablaCitas.innerHTML = '';
+
+        try {
+            const response = await fetch(`${API_URL}/citas`);
+            const citas = await response.json();
+
+            spinner.classList.remove('show');
+
+            if (citas.length === 0) {
+                tablaCitas.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon"></div>
+                        <p>No hay citas programadas</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Paciente</th>
+                            <th>Médico</th>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Motivo</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            citas.forEach(c => {
+                const estadoClass = c.estado === 'programada' ? 'badge-info' : 
+                                  c.estado === 'atendida' ? 'badge-success' : 'badge-danger';
+                const estadoText = c.estado === 'programada' ? 'Programada' : 
+                                 c.estado === 'atendida' ? 'Atendida' : 'Cancelada';
+
+                html += `
+                    <tr>
+                        <td>#${c.idCita}</td>
+                        <td>${c.nombrePaciente}</td>
+                        <td>${c.nombreMedico}</td>
+                        <td>${new Date(c.fecha).toLocaleDateString()}</td>
+                        <td>${c.hora}</td>
+                        <td>${c.motivo}</td>
+                        <td>
+                            <span class="badge ${estadoClass}">${estadoText}</span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                ${c.estado === 'programada' ? `
+                                    <button class="btn btn-success" onclick="marcarCitaAtendida(${c.idCita})">Atendida</button>
+                                    <button class="btn btn-warning" onclick="cancelarCita(${c.idCita})">Cancelar</button>
+                                ` : ''}
+                                <button class="btn btn-danger" onclick="eliminarCita(${c.idCita})">Eliminar</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            tablaCitas.innerHTML = html;
+
+        } catch (error) {
+            spinner.classList.remove('show');
+            mostrarAlerta(' Error al cargar citas: ' + error.message, 'error');
+        }
+    }
+
+    // ========== HABITACIONES ==========
+    async function crearHabitacion(event) {
+        event.preventDefault();
+
+        const habitacion = {
+            numero: document.getElementById('habitacionNumero').value,
+            tipo: document.getElementById('habitacionTipo').value,
+            estado: document.getElementById('habitacionEstado').value
+        };
+
+        try {
+            const response = await fetch(`${API_URL}/habitaciones`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(habitacion)
+            });
+
+            if (response.ok) {
+                mostrarAlerta(' Habitación registrada exitosamente', 'success');
+                document.getElementById('formHabitacion').reset();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                listarHabitaciones();
+            } else {
+                const error = await response.json();
+                mostrarAlerta(' Error: ' + (error.mensaje || 'No se pudo registrar'), 'error');
+            }
+        } catch (error) {
+            mostrarAlerta(' Error de conexión: ' + error.message, 'error');
+        }
+    }
+
+    async function listarHabitaciones() {
+        const tablaHabitaciones = document.getElementById('tablaHabitaciones');
+        const spinner = document.getElementById('spinnerHabitaciones');
+
+        spinner.classList.add('show');
+        tablaHabitaciones.innerHTML = '';
+
+        try {
+            const response = await fetch(`${API_URL}/habitaciones`);
+            const habitaciones = await response.json();
+
+            spinner.classList.remove('show');
+
+            if (habitaciones.length === 0) {
+                tablaHabitaciones.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon"></div>
+                        <p>No hay habitaciones registradas</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Número</th>
+                            <th>Tipo</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            habitaciones.forEach(h => {
+                const estadoClass = h.estado === 'disponible' ? 'badge-success' : 
+                                  h.estado === 'ocupada' ? 'badge-danger' : 'badge-warning';
+                const estadoText = h.estado === 'disponible' ? 'Disponible' : 
+                                 h.estado === 'ocupada' ? 'Ocupada' : 'Mantenimiento';
+
+                html += `
+                    <tr>
+                        <td>#${h.idHabitacion}</td>
+                        <td>${h.numero}</td>
+                        <td>${h.tipo}</td>
+                        <td>
+                            <span class="badge ${estadoClass}">${estadoText}</span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-secondary" onclick="editarHabitacion(${h.idHabitacion})">Editar</button>
+                                <button class="btn btn-danger" onclick="eliminarHabitacion(${h.idHabitacion})">Eliminar</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            tablaHabitaciones.innerHTML = html;
+
+        } catch (error) {
+            spinner.classList.remove('show');
+            mostrarAlerta(' Error al cargar habitaciones: ' + error.message, 'error');
+        }
+    }
+
+    // ========== HOSPITALIZACIÓN ==========
+    async function cargarDatosHospitalizacion() {
+        // Cargar pacientes
+        try {
+            const response = await fetch(`${API_URL}/pacientes`);
+            const pacientes = await response.json();
+            const select = document.getElementById('hospPaciente');
+            select.innerHTML = '<option value="">-- Seleccionar Paciente --</option>';
+            pacientes.forEach(p => {
+                select.innerHTML += `<option value="${p.idPaciente}">${p.nombres} ${p.apellidos}</option>`;
+            });
+        } catch (error) {
+            console.error('Error al cargar pacientes:', error);
+        }
+
+        // Cargar habitaciones disponibles
+        try {
+            const response = await fetch(`${API_URL}/habitaciones/estado/disponible`);
+            const habitaciones = await response.json();
+            const select = document.getElementById('hospHabitacion');
+            select.innerHTML = '<option value="">-- Seleccionar Habitación --</option>';
+            habitaciones.forEach(h => {
+                select.innerHTML += `<option value="${h.idHabitacion}">${h.numero} - ${h.tipo}</option>`;
+            });
+        } catch (error) {
+            console.error('Error al cargar habitaciones:', error);
+        }
+    }
+
+    async function crearHospitalizacion(event) {
+        event.preventDefault();
+
+        const hospitalizacion = {
+            idPaciente: parseInt(document.getElementById('hospPaciente').value),
+            idHabitacion: parseInt(document.getElementById('hospHabitacion').value),
+            fechaIngreso: document.getElementById('hospFechaIngreso').value,
+            diagnosticoIngreso: document.getElementById('hospDiagnostico').value,
+            estado: document.getElementById('hospEstado').value
+        };
+
+        try {
+            const response = await fetch(`${API_URL}/hospitalizaciones`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(hospitalizacion)
+            });
+
+            if (response.ok) {
+                mostrarAlerta(' Hospitalización registrada exitosamente', 'success');
+                document.getElementById('formHospitalizacion').reset();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                listarHospitalizaciones();
+            } else {
+                const error = await response.json();
+                mostrarAlerta(' Error: ' + (error.mensaje || 'No se pudo registrar'), 'error');
+            }
+        } catch (error) {
+            mostrarAlerta(' Error de conexión: ' + error.message, 'error');
+        }
+    }
+
+    async function listarHospitalizaciones() {
+        const tablaHospitalizaciones = document.getElementById('tablaHospitalizaciones');
+        const spinner = document.getElementById('spinnerHospitalizaciones');
+
+        spinner.classList.add('show');
+        tablaHospitalizaciones.innerHTML = '';
+
+        try {
+            const response = await fetch(`${API_URL}/hospitalizaciones`);
+            const hospitalizaciones = await response.json();
+
+            spinner.classList.remove('show');
+
+            if (hospitalizaciones.length === 0) {
+                tablaHospitalizaciones.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon"></div>
+                        <p>No hay hospitalizaciones registradas</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Paciente</th>
+                            <th>Habitación</th>
+                            <th>Tipo</th>
+                            <th>F. Ingreso</th>
+                            <th>F. Alta</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            hospitalizaciones.forEach(h => {
+                const estadoClass = h.estado === 'activo' ? 'badge-info' : 'badge-success';
+                const estadoText = h.estado === 'activo' ? 'Activo' : 'Dado de Alta';
+
+                html += `
+                    <tr>
+                        <td>#${h.idHosp}</td>
+                        <td>${h.nombrePaciente}</td>
+                        <td>${h.numeroHabitacion}</td>
+                        <td>${h.tipoHabitacion}</td>
+                        <td>${new Date(h.fechaIngreso).toLocaleDateString()}</td>
+                        <td>${h.fechaAlta ? new Date(h.fechaAlta).toLocaleDateString() : '-'}</td>
+                        <td>
+                            <span class="badge ${estadoClass}">${estadoText}</span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                ${h.estado === 'activo' ? `
+                                    <button class="btn btn-success" onclick="darAltaPaciente(${h.idHosp})">Dar Alta</button>
+                                ` : ''}
+                                <button class="btn btn-danger" onclick="eliminarHospitalizacion(${h.idHosp})">Eliminar</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            tablaHospitalizaciones.innerHTML = html;
+
+        } catch (error) {
+            spinner.classList.remove('show');
+            mostrarAlerta(' Error al cargar hospitalizaciones: ' + error.message, 'error');
+        }
+    }
+
+    // ========== FUNCIONES DE ACCIÓN ==========
+    async function marcarCitaAtendida(id) {
+        try {
+            const response = await fetch(`${API_URL}/citas/${id}/atendida`, {
+                method: 'PUT'
+            });
+
+            if (response.ok) {
+                mostrarAlerta(' Cita marcada como atendida', 'success');
+                listarCitas();
+            } else {
+                mostrarAlerta(' Error al marcar cita como atendida', 'error');
+            }
+        } catch (error) {
+            mostrarAlerta(' Error de conexión: ' + error.message, 'error');
+        }
+    }
+
+    async function cancelarCita(id) {
+        try {
+            const response = await fetch(`${API_URL}/citas/${id}/cancelar`, {
+                method: 'PUT'
+            });
+
+            if (response.ok) {
+                mostrarAlerta(' Cita cancelada', 'success');
+                listarCitas();
+            } else {
+                mostrarAlerta(' Error al cancelar cita', 'error');
+            }
+        } catch (error) {
+            mostrarAlerta(' Error de conexión: ' + error.message, 'error');
+        }
+    }
+
+    async function darAltaPaciente(id) {
+        const fechaAlta = new Date().toISOString().split('T')[0];
+        
+        try {
+            const response = await fetch(`${API_URL}/hospitalizaciones/${id}/alta?fechaAlta=${fechaAlta}`, {
+                method: 'PUT'
+            });
+
+            if (response.ok) {
+                mostrarAlerta(' Paciente dado de alta exitosamente', 'success');
+                listarHospitalizaciones();
+            } else {
+                mostrarAlerta(' Error al dar de alta al paciente', 'error');
+            }
+        } catch (error) {
+            mostrarAlerta(' Error de conexión: ' + error.message, 'error');
+        }
+    }
+
+    // Funciones placeholder para editar y eliminar
+    async function editarPaciente(id) {
+        try {
+            // Obtener datos del paciente
+            const response = await fetch(`${API_URL}/pacientes/${id}`);
+            if (!response.ok) {
+                mostrarAlerta(' Error al obtener datos del paciente', 'error');
+                return;
+            }
+            
+            const paciente = await response.json();
+            
+            // Llenar el formulario con los datos del paciente
+            document.getElementById('dni').value = paciente.dni;
+            document.getElementById('nombres').value = paciente.nombres;
+            document.getElementById('apellidos').value = paciente.apellidos;
+            document.getElementById('fechaNacimiento').value = paciente.fechaNacimiento;
+            document.getElementById('sexo').value = paciente.sexo;
+            document.getElementById('telefono').value = paciente.telefono || '';
+            document.getElementById('correo').value = paciente.correo || '';
+            document.getElementById('direccion').value = paciente.direccion || '';
+            
+            // Cambiar el botón a "Actualizar"
+            const submitBtn = document.querySelector('#formPaciente button[type="submit"]');
+            submitBtn.textContent = 'Actualizar Paciente';
+            submitBtn.onclick = () => actualizarPaciente(id);
+            
+            // Scroll al formulario
+            document.getElementById('formPaciente').scrollIntoView({ behavior: 'smooth' });
+            mostrarAlerta(' Modo edición activado. Complete los cambios y haga clic en "Actualizar Paciente"', 'info');
+            
+        } catch (error) {
+            mostrarAlerta(' Error al cargar datos del paciente: ' + error.message, 'error');
+        }
+    }
+
+    async function actualizarPaciente(id) {
+        const paciente = {
+            dni: document.getElementById('dni').value,
+            nombres: document.getElementById('nombres').value,
+            apellidos: document.getElementById('apellidos').value,
+            fechaNacimiento: document.getElementById('fechaNacimiento').value,
+            sexo: document.getElementById('sexo').value,
+            telefono: document.getElementById('telefono').value,
+            correo: document.getElementById('correo').value,
+            direccion: document.getElementById('direccion').value
+        };
+
+        try {
+            const response = await fetch(`${API_URL}/pacientes/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(paciente)
+            });
+
+            if (response.ok) {
+                mostrarAlerta(' Paciente actualizado exitosamente', 'success');
+                document.getElementById('formPaciente').reset();
+                
+                // Restaurar botón original
+                const submitBtn = document.querySelector('#formPaciente button[type="submit"]');
+                submitBtn.textContent = 'Registrar Paciente';
+                submitBtn.onclick = crearPaciente;
+                
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                listarPacientes();
+            } else {
+                const error = await response.json();
+                mostrarAlerta(' Error: ' + (error.mensaje || 'No se pudo actualizar'), 'error');
+            }
+        } catch (error) {
+            mostrarAlerta(' Error de conexión: ' + error.message, 'error');
+        }
+    }
+
+    async function eliminarPaciente(id) {
+        if (confirm('¿Está seguro de eliminar este paciente? Esta acción no se puede deshacer.')) {
+            try {
+                const response = await fetch(`${API_URL}/pacientes/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    mostrarAlerta(' Paciente eliminado exitosamente', 'success');
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    listarPacientes();
+                } else {
+                    const error = await response.json();
+                    mostrarAlerta(' Error: ' + (error.mensaje || 'No se pudo eliminar'), 'error');
+                }
+            } catch (error) {
+                mostrarAlerta(' Error de conexión: ' + error.message, 'error');
+            }
+        }
+    }
+
+    async function editarMedico(id) {
+        try {
+            const response = await fetch(`${API_URL}/medicos/${id}`);
+            if (!response.ok) {
+                mostrarAlerta(' Error al obtener datos del médico', 'error');
+                return;
+            }
+            
+            const medico = await response.json();
+            
+            // Llenar el formulario con los datos del médico
+            document.getElementById('medicoNombres').value = medico.nombres;
+            document.getElementById('medicoApellidos').value = medico.apellidos;
+            document.getElementById('colegiatura').value = medico.colegiatura;
+            document.getElementById('medicoTelefono').value = medico.telefono || '';
+            document.getElementById('medicoCorreo').value = medico.correo || '';
+            
+            // Cambiar el botón a "Actualizar"
+            const submitBtn = document.querySelector('#formMedico button[type="submit"]');
+            submitBtn.textContent = 'Actualizar Médico';
+            submitBtn.onclick = () => actualizarMedico(id);
+            
+            document.getElementById('formMedico').scrollIntoView({ behavior: 'smooth' });
+            mostrarAlerta(' Modo edición activado. Complete los cambios y haga clic en "Actualizar Médico"', 'info');
+            
+        } catch (error) {
+            mostrarAlerta(' Error al cargar datos del médico: ' + error.message, 'error');
+        }
+    }
+
+    async function actualizarMedico(id) {
+        const medico = {
+            nombres: document.getElementById('medicoNombres').value,
+            apellidos: document.getElementById('medicoApellidos').value,
+            colegiatura: document.getElementById('colegiatura').value,
+            telefono: document.getElementById('medicoTelefono').value,
+            correo: document.getElementById('medicoCorreo').value,
+            estado: true
+        };
+
+        try {
+            const response = await fetch(`${API_URL}/medicos/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(medico)
+            });
+
+            if (response.ok) {
+                mostrarAlerta(' Médico actualizado exitosamente', 'success');
+                document.getElementById('formMedico').reset();
+                
+                const submitBtn = document.querySelector('#formMedico button[type="submit"]');
+                submitBtn.textContent = 'Registrar Médico';
+                submitBtn.onclick = crearMedico;
+                
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                listarMedicos();
+            } else {
+                const error = await response.json();
+                mostrarAlerta(' Error: ' + (error.mensaje || 'No se pudo actualizar'), 'error');
+            }
+        } catch (error) {
+            mostrarAlerta(' Error de conexión: ' + error.message, 'error');
+        }
+    }
+
+    async function eliminarMedico(id) {
+        if (confirm('¿Está seguro de eliminar este médico? Esta acción no se puede deshacer.')) {
+            try {
+                const response = await fetch(`${API_URL}/medicos/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    mostrarAlerta(' Médico eliminado exitosamente', 'success');
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    listarMedicos();
+                } else {
+                    const error = await response.json();
+                    mostrarAlerta(' Error: ' + (error.mensaje || 'No se pudo eliminar'), 'error');
+                }
+            } catch (error) {
+                mostrarAlerta(' Error de conexión: ' + error.message, 'error');
+            }
+        }
+    }
+
+    async function editarEspecialidad(id) {
+        try {
+            const response = await fetch(`${API_URL}/especialidades/${id}`);
+            if (!response.ok) {
+                mostrarAlerta(' Error al obtener datos de la especialidad', 'error');
+                return;
+            }
+            
+            const especialidad = await response.json();
+            
+            // Llenar el formulario con los datos de la especialidad
+            document.getElementById('especialidadNombre').value = especialidad.nombre;
+            document.getElementById('especialidadDescripcion').value = especialidad.descripcion || '';
+            
+            // Cambiar el botón a "Actualizar"
+            const submitBtn = document.querySelector('#formEspecialidad button[type="submit"]');
+            submitBtn.textContent = 'Actualizar Especialidad';
+            submitBtn.onclick = () => actualizarEspecialidad(id);
+            
+            document.getElementById('formEspecialidad').scrollIntoView({ behavior: 'smooth' });
+            mostrarAlerta(' Modo edición activado. Complete los cambios y haga clic en "Actualizar Especialidad"', 'info');
+            
+        } catch (error) {
+            mostrarAlerta(' Error al cargar datos de la especialidad: ' + error.message, 'error');
+        }
+    }
+
+    async function actualizarEspecialidad(id) {
+        const especialidad = {
+            nombre: document.getElementById('especialidadNombre').value,
+            descripcion: document.getElementById('especialidadDescripcion').value
+        };
+
+        try {
+            const response = await fetch(`${API_URL}/especialidades/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(especialidad)
+            });
+
+            if (response.ok) {
+                mostrarAlerta(' Especialidad actualizada exitosamente', 'success');
+                document.getElementById('formEspecialidad').reset();
+                
+                const submitBtn = document.querySelector('#formEspecialidad button[type="submit"]');
+                submitBtn.textContent = 'Registrar Especialidad';
+                submitBtn.onclick = crearEspecialidad;
+                
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                listarEspecialidades();
+            } else {
+                const error = await response.json();
+                mostrarAlerta(' Error: ' + (error.mensaje || 'No se pudo actualizar'), 'error');
+            }
+        } catch (error) {
+            mostrarAlerta(' Error de conexión: ' + error.message, 'error');
+        }
+    }
+
+    async function eliminarEspecialidad(id) {
+        if (confirm('¿Está seguro de eliminar esta especialidad? Esta acción no se puede deshacer.')) {
+            try {
+                const response = await fetch(`${API_URL}/especialidades/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    mostrarAlerta(' Especialidad eliminada exitosamente', 'success');
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    listarEspecialidades();
+                } else {
+                    const error = await response.json();
+                    mostrarAlerta(' Error: ' + (error.mensaje || 'No se pudo eliminar'), 'error');
+                }
+            } catch (error) {
+                mostrarAlerta(' Error de conexión: ' + error.message, 'error');
+            }
+        }
+    }
+
+    async function eliminarCita(id) {
+        if (confirm('¿Está seguro de eliminar esta cita? Esta acción no se puede deshacer.')) {
+            try {
+                const response = await fetch(`${API_URL}/citas/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    mostrarAlerta(' Cita eliminada exitosamente', 'success');
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    listarCitas();
+                } else {
+                    const error = await response.json();
+                    mostrarAlerta(' Error: ' + (error.mensaje || 'No se pudo eliminar'), 'error');
+                }
+            } catch (error) {
+                mostrarAlerta(' Error de conexión: ' + error.message, 'error');
+            }
+        }
+    }
+
+    async function editarHabitacion(id) {
+        try {
+            const response = await fetch(`${API_URL}/habitaciones/${id}`);
+            if (!response.ok) {
+                mostrarAlerta(' Error al obtener datos de la habitación', 'error');
+                return;
+            }
+            
+            const habitacion = await response.json();
+            
+            // Llenar el formulario con los datos de la habitación
+            document.getElementById('habitacionNumero').value = habitacion.numero;
+            document.getElementById('habitacionTipo').value = habitacion.tipo;
+            document.getElementById('habitacionEstado').value = habitacion.estado;
+            
+            // Cambiar el botón a "Actualizar"
+            const submitBtn = document.querySelector('#formHabitacion button[type="submit"]');
+            submitBtn.textContent = 'Actualizar Habitación';
+            submitBtn.onclick = () => actualizarHabitacion(id);
+            
+            document.getElementById('formHabitacion').scrollIntoView({ behavior: 'smooth' });
+            mostrarAlerta(' Modo edición activado. Complete los cambios y haga clic en "Actualizar Habitación"', 'info');
+            
+        } catch (error) {
+            mostrarAlerta(' Error al cargar datos de la habitación: ' + error.message, 'error');
+        }
+    }
+
+    async function actualizarHabitacion(id) {
+        const habitacion = {
+            numero: document.getElementById('habitacionNumero').value,
+            tipo: document.getElementById('habitacionTipo').value,
+            estado: document.getElementById('habitacionEstado').value
+        };
+
+        try {
+            const response = await fetch(`${API_URL}/habitaciones/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(habitacion)
+            });
+
+            if (response.ok) {
+                mostrarAlerta(' Habitación actualizada exitosamente', 'success');
+                document.getElementById('formHabitacion').reset();
+                
+                const submitBtn = document.querySelector('#formHabitacion button[type="submit"]');
+                submitBtn.textContent = 'Registrar Habitación';
+                submitBtn.onclick = crearHabitacion;
+                
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                listarHabitaciones();
+            } else {
+                const error = await response.json();
+                mostrarAlerta(' Error: ' + (error.mensaje || 'No se pudo actualizar'), 'error');
+            }
+        } catch (error) {
+            mostrarAlerta(' Error de conexión: ' + error.message, 'error');
+        }
+    }
+
+    async function eliminarHabitacion(id) {
+        if (confirm('¿Está seguro de eliminar esta habitación? Esta acción no se puede deshacer.')) {
+            try {
+                const response = await fetch(`${API_URL}/habitaciones/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    mostrarAlerta(' Habitación eliminada exitosamente', 'success');
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    listarHabitaciones();
+                } else {
+                    const error = await response.json();
+                    mostrarAlerta(' Error: ' + (error.mensaje || 'No se pudo eliminar'), 'error');
+                }
+            } catch (error) {
+                mostrarAlerta(' Error de conexión: ' + error.message, 'error');
+            }
+        }
+    }
+
+    async function eliminarHospitalizacion(id) {
+        if (confirm('¿Está seguro de eliminar esta hospitalización? Esta acción no se puede deshacer.')) {
+            try {
+                const response = await fetch(`${API_URL}/hospitalizaciones/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    mostrarAlerta(' Hospitalización eliminada exitosamente', 'success');
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    listarHospitalizaciones();
+                } else {
+                    const error = await response.json();
+                    mostrarAlerta(' Error: ' + (error.mensaje || 'No se pudo eliminar'), 'error');
+                }
+            } catch (error) {
+                mostrarAlerta(' Error de conexión: ' + error.message, 'error');
+            }
+        }
+    }
+
+    // Inicializar
+    document.addEventListener('DOMContentLoaded', function() {
+        verificarBackend();
+        listarPacientes();
+    });
+</script>
+</body>
+</html>

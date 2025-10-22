@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug API</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { margin: 10px 0; padding: 10px; border: 1px solid #ddd; }
+        .error { background: #ffebee; border-color: #f44336; }
+        .success { background: #e8f5e8; border-color: #4caf50; }
+        button { padding: 10px 15px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Debug API</h1>
+    
+    <button onclick="testPacientes()">Test GET Pacientes</button>
+    <button onclick="testCreatePaciente()">Test POST Paciente</button>
+    <button onclick="testCitas()">Test GET Citas</button>
+    <button onclick="testMarcarCita()">Test PUT Cita Atendida</button>
+    
+    <div id="result"></div>
+
+    <script>
+        const API_URL = 'http://localhost:8082/api';
+
+        function log(message, isError = false) {
+            const div = document.getElementById('result');
+            div.innerHTML += `<div class="result ${isError ? 'error' : 'success'}">${message}</div>`;
+        }
+
+        async function testPacientes() {
+            try {
+                log('🔍 Probando GET /api/pacientes...');
+                const response = await fetch(`${API_URL}/pacientes`);
+                const data = await response.json();
+                log(`✅ GET Pacientes: ${response.status} - ${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                log(`❌ Error GET Pacientes: ${error.message}`, true);
+            }
+        }
+
+        async function testCreatePaciente() {
+            const paciente = {
+                dni: "99999999",
+                nombres: "Test",
+                apellidos: "Usuario",
+                fechaNacimiento: "1990-01-01",
+                sexo: "M",
+                telefono: "123456789",
+                correo: "test@email.com",
+                direccion: "Test Address"
+            };
+
+            try {
+                log('🔍 Probando POST /api/pacientes...');
+                log(`📤 Datos enviados: ${JSON.stringify(paciente, null, 2)}`);
+                
+                const response = await fetch(`${API_URL}/pacientes`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(paciente)
+                });
+                
+                const data = await response.json();
+                log(`✅ POST Paciente: ${response.status} - ${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                log(`❌ Error POST Paciente: ${error.message}`, true);
+            }
+        }
+
+        async function testCitas() {
+            try {
+                log('🔍 Probando GET /api/citas...');
+                const response = await fetch(`${API_URL}/citas`);
+                const data = await response.json();
+                log(`✅ GET Citas: ${response.status} - ${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                log(`❌ Error GET Citas: ${error.message}`, true);
+            }
+        }
+
+        async function testMarcarCita() {
+            try {
+                log('🔍 Probando PUT /api/citas/1/atendida...');
+                const response = await fetch(`${API_URL}/citas/1/atendida`, {
+                    method: 'PUT'
+                });
+                const data = await response.json();
+                log(`✅ PUT Cita Atendida: ${response.status} - ${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                log(`❌ Error PUT Cita Atendida: ${error.message}`, true);
+            }
+        }
+
+        // Test automático
+        window.onload = function() {
+            log('🚀 Iniciando tests automáticos...');
+            setTimeout(testPacientes, 1000);
+            setTimeout(testCitas, 2000);
+            setTimeout(testCreatePaciente, 3000);
+            setTimeout(testMarcarCita, 4000);
+        };
+    </script>
+</body>
+</html>

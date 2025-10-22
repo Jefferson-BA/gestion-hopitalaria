@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Simple API</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { margin: 10px 0; padding: 10px; border: 1px solid #ddd; }
+        .error { background: #ffebee; border-color: #f44336; }
+        .success { background: #e8f5e8; border-color: #4caf50; }
+        button { padding: 10px 15px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Test Simple API</h1>
+    
+    <button onclick="testGetPacientes()">Test GET Pacientes</button>
+    <button onclick="testCreatePacienteSimple()">Test POST Paciente Simple</button>
+    <button onclick="testCreatePacienteConAcentos()">Test POST Paciente Con Acentos</button>
+    
+    <div id="result"></div>
+
+    <script>
+        const API_URL = 'http://localhost:8082/api';
+
+        function log(message, isError = false) {
+            const div = document.getElementById('result');
+            div.innerHTML += `<div class="result ${isError ? 'error' : 'success'}">${message}</div>`;
+        }
+
+        async function testGetPacientes() {
+            try {
+                log('🔍 Probando GET /api/pacientes...');
+                const response = await fetch(`${API_URL}/pacientes`);
+                const data = await response.json();
+                log(`✅ GET Pacientes: ${response.status} - ${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                log(`❌ Error GET Pacientes: ${error.message}`, true);
+            }
+        }
+
+        async function testCreatePacienteSimple() {
+            const paciente = {
+                dni: "11111111",
+                nombres: "Juan",
+                apellidos: "Perez",
+                fechaNacimiento: "1990-01-01",
+                sexo: "M",
+                telefono: "123456789",
+                correo: "juan@email.com",
+                direccion: "Calle 123"
+            };
+
+            try {
+                log('🔍 Probando POST /api/pacientes (sin acentos)...');
+                log(`📤 Datos: ${JSON.stringify(paciente, null, 2)}`);
+                
+                const response = await fetch(`${API_URL}/pacientes`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json; charset=utf-8'
+                    },
+                    body: JSON.stringify(paciente)
+                });
+                
+                const data = await response.json();
+                log(`✅ POST Paciente: ${response.status} - ${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                log(`❌ Error POST Paciente: ${error.message}`, true);
+            }
+        }
+
+        async function testCreatePacienteConAcentos() {
+            const paciente = {
+                dni: "22222222",
+                nombres: "María",
+                apellidos: "González",
+                fechaNacimiento: "1985-08-22",
+                sexo: "F",
+                telefono: "987654321",
+                correo: "maria@email.com",
+                direccion: "Avenida Principal 456"
+            };
+
+            try {
+                log('🔍 Probando POST /api/pacientes (con acentos)...');
+                log(`📤 Datos: ${JSON.stringify(paciente, null, 2)}`);
+                
+                const response = await fetch(`${API_URL}/pacientes`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json; charset=utf-8'
+                    },
+                    body: JSON.stringify(paciente)
+                });
+                
+                const data = await response.json();
+                log(`✅ POST Paciente: ${response.status} - ${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                log(`❌ Error POST Paciente: ${error.message}`, true);
+            }
+        }
+
+        // Test automático
+        window.onload = function() {
+            log('🚀 Iniciando tests...');
+            setTimeout(testGetPacientes, 1000);
+            setTimeout(testCreatePacienteSimple, 2000);
+            setTimeout(testCreatePacienteConAcentos, 3000);
+        };
+    </script>
+</body>
+</html>

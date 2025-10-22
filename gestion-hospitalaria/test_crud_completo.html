@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test CRUD Completo</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .test-section h3 { margin-top: 0; color: #333; }
+        button { padding: 10px 15px; margin: 5px; border: none; border-radius: 3px; cursor: pointer; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: black; }
+        .btn-danger { background: #dc3545; color: white; }
+        .result { margin-top: 10px; padding: 10px; border-radius: 3px; white-space: pre-wrap; font-family: monospace; font-size: 12px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test CRUD Completo - Sistema Hospitalario</h1>
+    <p>Puerto: <strong>8082</strong></p>
+    
+    <div class="test-section">
+        <h3>1. Test de Conexión</h3>
+        <button class="btn-primary" onclick="testConnection()">Probar Conexión</button>
+        <div id="connectionResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. Test Pacientes CRUD</h3>
+        <button class="btn-primary" onclick="testGetPacientes()">GET Pacientes</button>
+        <button class="btn-success" onclick="testCreatePaciente()">POST Paciente</button>
+        <button class="btn-warning" onclick="testUpdatePaciente()">PUT Paciente</button>
+        <button class="btn-danger" onclick="testDeletePaciente()">DELETE Paciente</button>
+        <div id="pacientesResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. Test Médicos CRUD</h3>
+        <button class="btn-primary" onclick="testGetMedicos()">GET Médicos</button>
+        <button class="btn-success" onclick="testCreateMedico()">POST Médico</button>
+        <button class="btn-warning" onclick="testUpdateMedico()">PUT Médico</button>
+        <button class="btn-danger" onclick="testDeleteMedico()">DELETE Médico</button>
+        <div id="medicosResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>4. Test Especialidades CRUD</h3>
+        <button class="btn-primary" onclick="testGetEspecialidades()">GET Especialidades</button>
+        <button class="btn-success" onclick="testCreateEspecialidad()">POST Especialidad</button>
+        <button class="btn-warning" onclick="testUpdateEspecialidad()">PUT Especialidad</button>
+        <button class="btn-danger" onclick="testDeleteEspecialidad()">DELETE Especialidad</button>
+        <div id="especialidadesResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>5. Test Citas CRUD</h3>
+        <button class="btn-primary" onclick="testGetCitas()">GET Citas</button>
+        <button class="btn-success" onclick="testCreateCita()">POST Cita</button>
+        <button class="btn-warning" onclick="testUpdateCita()">PUT Cita</button>
+        <button class="btn-danger" onclick="testDeleteCita()">DELETE Cita</button>
+        <div id="citasResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>6. Test Habitaciones CRUD</h3>
+        <button class="btn-primary" onclick="testGetHabitaciones()">GET Habitaciones</button>
+        <button class="btn-success" onclick="testCreateHabitacion()">POST Habitación</button>
+        <button class="btn-warning" onclick="testUpdateHabitacion()">PUT Habitación</button>
+        <button class="btn-danger" onclick="testDeleteHabitacion()">DELETE Habitación</button>
+        <div id="habitacionesResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>7. Test Hospitalizaciones CRUD</h3>
+        <button class="btn-primary" onclick="testGetHospitalizaciones()">GET Hospitalizaciones</button>
+        <button class="btn-success" onclick="testCreateHospitalizacion()">POST Hospitalización</button>
+        <button class="btn-warning" onclick="testUpdateHospitalizacion()">PUT Hospitalización</button>
+        <button class="btn-danger" onclick="testDeleteHospitalizacion()">DELETE Hospitalización</button>
+        <div id="hospitalizacionesResult" class="result"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8082/api';
+        let testData = {
+            pacienteId: null,
+            medicoId: null,
+            especialidadId: null,
+            citaId: null,
+            habitacionId: null,
+            hospitalizacionId: null
+        };
+
+        function showResult(elementId, data, isError = false, isInfo = false) {
+            const element = document.getElementById(elementId);
+            element.textContent = JSON.stringify(data, null, 2);
+            element.className = `result ${isError ? 'error' : isInfo ? 'info' : 'success'}`;
+        }
+
+        async function testConnection() {
+            try {
+                const response = await fetch(`${API_URL}/pacientes`);
+                if (response.ok) {
+                    showResult('connectionResult', { status: 'OK', message: 'Conexión exitosa' });
+                } else {
+                    showResult('connectionResult', { status: 'ERROR', message: 'Error de conexión', statusCode: response.status }, true);
+                }
+            } catch (error) {
+                showResult('connectionResult', { status: 'ERROR', message: error.message }, true);
+            }
+        }
+
+        // PACIENTES
+        async function testGetPacientes() {
+            try {
+                const response = await fetch(`${API_URL}/pacientes`);
+                const data = await response.json();
+                showResult('pacientesResult', data, !response.ok);
+            } catch (error) {
+                showResult('pacientesResult', { error: error.message }, true);
+            }
+        }
+
+        async function testCreatePaciente() {
+            const paciente = {
+                dni: "TEST123456",
+                nombres: "Test",
+                apellidos: "Usuario",
+                fechaNacimiento: "1990-01-01",
+                sexo: "M",
+                telefono: "123456789",
+                correo: "test@email.com",
+                direccion: "Test Address"
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/pacientes`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(paciente)
+                });
+                const data = await response.json();
+                if (response.ok && data.idPaciente) {
+                    testData.pacienteId = data.idPaciente;
+                }
+                showResult('pacientesResult', data, !response.ok);
+            } catch (error) {
+                showResult('pacientesResult', { error: error.message }, true);
+            }
+        }
+
+        async function testUpdatePaciente() {
+            if (!testData.pacienteId) {
+                showResult('pacientesResult', { error: 'No hay paciente para actualizar. Crea uno primero.' }, true);
+                return;
+            }
+
+            const paciente = {
+                dni: "TEST123456",
+                nombres: "Test Actualizado",
+                apellidos: "Usuario Modificado",
+                fechaNacimiento: "1990-01-01",
+                sexo: "M",
+                telefono: "987654321",
+                correo: "test.actualizado@email.com",
+                direccion: "Test Address Updated"
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/pacientes/${testData.pacienteId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(paciente)
+                });
+                const data = await response.json();
+                showResult('pacientesResult', data, !response.ok);
+            } catch (error) {
+                showResult('pacientesResult', { error: error.message }, true);
+            }
+        }
+
+        async function testDeletePaciente() {
+            if (!testData.pacienteId) {
+                showResult('pacientesResult', { error: 'No hay paciente para eliminar. Crea uno primero.' }, true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/pacientes/${testData.pacienteId}`, {
+                    method: 'DELETE'
+                });
+                const data = response.ok ? { message: 'Paciente eliminado exitosamente' } : await response.json();
+                showResult('pacientesResult', data, !response.ok);
+                if (response.ok) {
+                    testData.pacienteId = null;
+                }
+            } catch (error) {
+                showResult('pacientesResult', { error: error.message }, true);
+            }
+        }
+
+        // MÉDICOS
+        async function testGetMedicos() {
+            try {
+                const response = await fetch(`${API_URL}/medicos`);
+                const data = await response.json();
+                showResult('medicosResult', data, !response.ok);
+            } catch (error) {
+                showResult('medicosResult', { error: error.message }, true);
+            }
+        }
+
+        async function testCreateMedico() {
+            const medico = {
+                nombres: "Dr. Test",
+                apellidos: "Médico",
+                colegiatura: "TEST123",
+                telefono: "123456789",
+                correo: "test.medico@email.com",
+                estado: true
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/medicos`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(medico)
+                });
+                const data = await response.json();
+                if (response.ok && data.idMedico) {
+                    testData.medicoId = data.idMedico;
+                }
+                showResult('medicosResult', data, !response.ok);
+            } catch (error) {
+                showResult('medicosResult', { error: error.message }, true);
+            }
+        }
+
+        async function testUpdateMedico() {
+            if (!testData.medicoId) {
+                showResult('medicosResult', { error: 'No hay médico para actualizar. Crea uno primero.' }, true);
+                return;
+            }
+
+            const medico = {
+                nombres: "Dr. Test Actualizado",
+                apellidos: "Médico Modificado",
+                colegiatura: "TEST123",
+                telefono: "987654321",
+                correo: "test.medico.actualizado@email.com",
+                estado: true
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/medicos/${testData.medicoId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(medico)
+                });
+                const data = await response.json();
+                showResult('medicosResult', data, !response.ok);
+            } catch (error) {
+                showResult('medicosResult', { error: error.message }, true);
+            }
+        }
+
+        async function testDeleteMedico() {
+            if (!testData.medicoId) {
+                showResult('medicosResult', { error: 'No hay médico para eliminar. Crea uno primero.' }, true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/medicos/${testData.medicoId}`, {
+                    method: 'DELETE'
+                });
+                const data = response.ok ? { message: 'Médico eliminado exitosamente' } : await response.json();
+                showResult('medicosResult', data, !response.ok);
+                if (response.ok) {
+                    testData.medicoId = null;
+                }
+            } catch (error) {
+                showResult('medicosResult', { error: error.message }, true);
+            }
+        }
+
+        // ESPECIALIDADES
+        async function testGetEspecialidades() {
+            try {
+                const response = await fetch(`${API_URL}/especialidades`);
+                const data = await response.json();
+                showResult('especialidadesResult', data, !response.ok);
+            } catch (error) {
+                showResult('especialidadesResult', { error: error.message }, true);
+            }
+        }
+
+        async function testCreateEspecialidad() {
+            const especialidad = {
+                nombre: "Test Especialidad",
+                descripcion: "Especialidad de prueba"
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/especialidades`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(especialidad)
+                });
+                const data = await response.json();
+                if (response.ok && data.idEspecialidad) {
+                    testData.especialidadId = data.idEspecialidad;
+                }
+                showResult('especialidadesResult', data, !response.ok);
+            } catch (error) {
+                showResult('especialidadesResult', { error: error.message }, true);
+            }
+        }
+
+        async function testUpdateEspecialidad() {
+            if (!testData.especialidadId) {
+                showResult('especialidadesResult', { error: 'No hay especialidad para actualizar. Crea una primero.' }, true);
+                return;
+            }
+
+            const especialidad = {
+                nombre: "Test Especialidad Actualizada",
+                descripcion: "Especialidad de prueba actualizada"
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/especialidades/${testData.especialidadId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(especialidad)
+                });
+                const data = await response.json();
+                showResult('especialidadesResult', data, !response.ok);
+            } catch (error) {
+                showResult('especialidadesResult', { error: error.message }, true);
+            }
+        }
+
+        async function testDeleteEspecialidad() {
+            if (!testData.especialidadId) {
+                showResult('especialidadesResult', { error: 'No hay especialidad para eliminar. Crea una primero.' }, true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/especialidades/${testData.especialidadId}`, {
+                    method: 'DELETE'
+                });
+                const data = response.ok ? { message: 'Especialidad eliminada exitosamente' } : await response.json();
+                showResult('especialidadesResult', data, !response.ok);
+                if (response.ok) {
+                    testData.especialidadId = null;
+                }
+            } catch (error) {
+                showResult('especialidadesResult', { error: error.message }, true);
+            }
+        }
+
+        // CITAS
+        async function testGetCitas() {
+            try {
+                const response = await fetch(`${API_URL}/citas`);
+                const data = await response.json();
+                showResult('citasResult', data, !response.ok);
+            } catch (error) {
+                showResult('citasResult', { error: error.message }, true);
+            }
+        }
+
+        async function testCreateCita() {
+            const cita = {
+                idPaciente: 1,
+                idMedico: 1,
+                fecha: "2024-12-25",
+                hora: "10:00:00",
+                motivo: "Consulta de prueba",
+                estado: "programada"
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/citas`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(cita)
+                });
+                const data = await response.json();
+                if (response.ok && data.idCita) {
+                    testData.citaId = data.idCita;
+                }
+                showResult('citasResult', data, !response.ok);
+            } catch (error) {
+                showResult('citasResult', { error: error.message }, true);
+            }
+        }
+
+        async function testUpdateCita() {
+            if (!testData.citaId) {
+                showResult('citasResult', { error: 'No hay cita para actualizar. Crea una primero.' }, true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/citas/${testData.citaId}/atendida`, {
+                    method: 'PUT'
+                });
+                const data = await response.json();
+                showResult('citasResult', data, !response.ok);
+            } catch (error) {
+                showResult('citasResult', { error: error.message }, true);
+            }
+        }
+
+        async function testDeleteCita() {
+            if (!testData.citaId) {
+                showResult('citasResult', { error: 'No hay cita para eliminar. Crea una primero.' }, true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/citas/${testData.citaId}`, {
+                    method: 'DELETE'
+                });
+                const data = response.ok ? { message: 'Cita eliminada exitosamente' } : await response.json();
+                showResult('citasResult', data, !response.ok);
+                if (response.ok) {
+                    testData.citaId = null;
+                }
+            } catch (error) {
+                showResult('citasResult', { error: error.message }, true);
+            }
+        }
+
+        // HABITACIONES
+        async function testGetHabitaciones() {
+            try {
+                const response = await fetch(`${API_URL}/habitaciones`);
+                const data = await response.json();
+                showResult('habitacionesResult', data, !response.ok);
+            } catch (error) {
+                showResult('habitacionesResult', { error: error.message }, true);
+            }
+        }
+
+        async function testCreateHabitacion() {
+            const habitacion = {
+                numero: "TEST101",
+                tipo: "general",
+                estado: "disponible"
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/habitaciones`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(habitacion)
+                });
+                const data = await response.json();
+                if (response.ok && data.idHabitacion) {
+                    testData.habitacionId = data.idHabitacion;
+                }
+                showResult('habitacionesResult', data, !response.ok);
+            } catch (error) {
+                showResult('habitacionesResult', { error: error.message }, true);
+            }
+        }
+
+        async function testUpdateHabitacion() {
+            if (!testData.habitacionId) {
+                showResult('habitacionesResult', { error: 'No hay habitación para actualizar. Crea una primero.' }, true);
+                return;
+            }
+
+            const habitacion = {
+                numero: "TEST101",
+                tipo: "privada",
+                estado: "ocupada"
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/habitaciones/${testData.habitacionId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(habitacion)
+                });
+                const data = await response.json();
+                showResult('habitacionesResult', data, !response.ok);
+            } catch (error) {
+                showResult('habitacionesResult', { error: error.message }, true);
+            }
+        }
+
+        async function testDeleteHabitacion() {
+            if (!testData.habitacionId) {
+                showResult('habitacionesResult', { error: 'No hay habitación para eliminar. Crea una primero.' }, true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/habitaciones/${testData.habitacionId}`, {
+                    method: 'DELETE'
+                });
+                const data = response.ok ? { message: 'Habitación eliminada exitosamente' } : await response.json();
+                showResult('habitacionesResult', data, !response.ok);
+                if (response.ok) {
+                    testData.habitacionId = null;
+                }
+            } catch (error) {
+                showResult('habitacionesResult', { error: error.message }, true);
+            }
+        }
+
+        // HOSPITALIZACIONES
+        async function testGetHospitalizaciones() {
+            try {
+                const response = await fetch(`${API_URL}/hospitalizaciones`);
+                const data = await response.json();
+                showResult('hospitalizacionesResult', data, !response.ok);
+            } catch (error) {
+                showResult('hospitalizacionesResult', { error: error.message }, true);
+            }
+        }
+
+        async function testCreateHospitalizacion() {
+            const hospitalizacion = {
+                idPaciente: 1,
+                idHabitacion: 1,
+                fechaIngreso: "2024-12-25",
+                motivo: "Hospitalización de prueba",
+                estado: "activo"
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/hospitalizaciones`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(hospitalizacion)
+                });
+                const data = await response.json();
+                if (response.ok && data.idHosp) {
+                    testData.hospitalizacionId = data.idHosp;
+                }
+                showResult('hospitalizacionesResult', data, !response.ok);
+            } catch (error) {
+                showResult('hospitalizacionesResult', { error: error.message }, true);
+            }
+        }
+
+        async function testUpdateHospitalizacion() {
+            if (!testData.hospitalizacionId) {
+                showResult('hospitalizacionesResult', { error: 'No hay hospitalización para actualizar. Crea una primero.' }, true);
+                return;
+            }
+
+            const hospitalizacion = {
+                idPaciente: 1,
+                idHabitacion: 1,
+                fechaIngreso: "2024-12-25",
+                motivo: "Hospitalización de prueba actualizada",
+                estado: "dado de alta"
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/hospitalizaciones/${testData.hospitalizacionId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(hospitalizacion)
+                });
+                const data = await response.json();
+                showResult('hospitalizacionesResult', data, !response.ok);
+            } catch (error) {
+                showResult('hospitalizacionesResult', { error: error.message }, true);
+            }
+        }
+
+        async function testDeleteHospitalizacion() {
+            if (!testData.hospitalizacionId) {
+                showResult('hospitalizacionesResult', { error: 'No hay hospitalización para eliminar. Crea una primero.' }, true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/hospitalizaciones/${testData.hospitalizacionId}`, {
+                    method: 'DELETE'
+                });
+                const data = response.ok ? { message: 'Hospitalización eliminada exitosamente' } : await response.json();
+                showResult('hospitalizacionesResult', data, !response.ok);
+                if (response.ok) {
+                    testData.hospitalizacionId = null;
+                }
+            } catch (error) {
+                showResult('hospitalizacionesResult', { error: error.message }, true);
+            }
+        }
+
+        // Test automático al cargar
+        window.onload = function() {
+            testConnection();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API - Sistema Hospitalario</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 3px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+        input, select {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test API - Sistema de Gestión Hospitalaria</h1>
+    <p>Puerto: <strong id="apiPort">8082</strong></p>
+    
+    <div class="test-section">
+        <h3>1. Test de Conexión</h3>
+        <button onclick="testConnection()">Probar Conexión</button>
+        <div id="connectionResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. Test de Pacientes</h3>
+        <button onclick="testGetPacientes()">Obtener Pacientes</button>
+        <button onclick="testCreatePaciente()">Crear Paciente</button>
+        <div id="pacientesResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. Test de Citas</h3>
+        <button onclick="testGetCitas()">Obtener Citas</button>
+        <button onclick="testCreateCita()">Crear Cita</button>
+        <button onclick="testMarcarCitaAtendida()">Marcar Cita Atendida</button>
+        <button onclick="testCancelarCita()">Cancelar Cita</button>
+        <div id="citasResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>4. Test de Médicos</h3>
+        <button onclick="testGetMedicos()">Obtener Médicos</button>
+        <button onclick="testCreateMedico()">Crear Médico</button>
+        <div id="medicosResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>5. Test de Especialidades</h3>
+        <button onclick="testGetEspecialidades()">Obtener Especialidades</button>
+        <button onclick="testCreateEspecialidad()">Crear Especialidad</button>
+        <div id="especialidadesResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>6. Test de Habitaciones</h3>
+        <button onclick="testGetHabitaciones()">Obtener Habitaciones</button>
+        <button onclick="testCreateHabitacion()">Crear Habitación</button>
+        <div id="habitacionesResult" class="result"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8082/api';
+
+        function showResult(elementId, data, isError = false) {
+            const element = document.getElementById(elementId);
+            element.textContent = JSON.stringify(data, null, 2);
+            element.className = `result ${isError ? 'error' : 'success'}`;
+        }
+
+        async function testConnection() {
+            try {
+                const response = await fetch(`${API_URL}/pacientes`);
+                if (response.ok) {
+                    showResult('connectionResult', { status: 'OK', message: 'Conexión exitosa' });
+                } else {
+                    showResult('connectionResult', { status: 'ERROR', message: 'Error de conexión', statusCode: response.status }, true);
+                }
+            } catch (error) {
+                showResult('connectionResult', { status: 'ERROR', message: error.message }, true);
+            }
+        }
+
+        async function testGetPacientes() {
+            try {
+                const response = await fetch(`${API_URL}/pacientes`);
+                const data = await response.json();
+                showResult('pacientesResult', data, !response.ok);
+            } catch (error) {
+                showResult('pacientesResult', { error: error.message }, true);
+            }
+        }
+
+        async function testCreatePaciente() {
+            const paciente = {
+                dni: '12345678',
+                nombres: 'Juan',
+                apellidos: 'Pérez',
+                fechaNacimiento: '1990-01-01',
+                sexo: 'M',
+                telefono: '987654321',
+                correo: 'juan.perez@email.com',
+                direccion: 'Av. Principal 123'
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/pacientes`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(paciente)
+                });
+                const data = await response.json();
+                showResult('pacientesResult', data, !response.ok);
+            } catch (error) {
+                showResult('pacientesResult', { error: error.message }, true);
+            }
+        }
+
+        async function testGetCitas() {
+            try {
+                const response = await fetch(`${API_URL}/citas`);
+                const data = await response.json();
+                showResult('citasResult', data, !response.ok);
+            } catch (error) {
+                showResult('citasResult', { error: error.message }, true);
+            }
+        }
+
+        async function testCreateCita() {
+            const cita = {
+                idPaciente: 1,
+                idMedico: 1,
+                fecha: '2024-02-15',
+                hora: '10:00:00',
+                motivo: 'Consulta de prueba',
+                estado: 'programada'
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/citas`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(cita)
+                });
+                const data = await response.json();
+                showResult('citasResult', data, !response.ok);
+            } catch (error) {
+                showResult('citasResult', { error: error.message }, true);
+            }
+        }
+
+        async function testMarcarCitaAtendida() {
+            try {
+                const response = await fetch(`${API_URL}/citas/1/atendida`, {
+                    method: 'PUT'
+                });
+                const data = await response.json();
+                showResult('citasResult', data, !response.ok);
+            } catch (error) {
+                showResult('citasResult', { error: error.message }, true);
+            }
+        }
+
+        async function testCancelarCita() {
+            try {
+                const response = await fetch(`${API_URL}/citas/1/cancelar`, {
+                    method: 'PUT'
+                });
+                const data = await response.json();
+                showResult('citasResult', data, !response.ok);
+            } catch (error) {
+                showResult('citasResult', { error: error.message }, true);
+            }
+        }
+
+        async function testGetMedicos() {
+            try {
+                const response = await fetch(`${API_URL}/medicos`);
+                const data = await response.json();
+                showResult('medicosResult', data, !response.ok);
+            } catch (error) {
+                showResult('medicosResult', { error: error.message }, true);
+            }
+        }
+
+        async function testCreateMedico() {
+            const medico = {
+                nombres: 'Dr. Carlos',
+                apellidos: 'Mendoza',
+                colegiatura: '12345',
+                telefono: '987654321',
+                correo: 'carlos.mendoza@hospital.com',
+                estado: true
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/medicos`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(medico)
+                });
+                const data = await response.json();
+                showResult('medicosResult', data, !response.ok);
+            } catch (error) {
+                showResult('medicosResult', { error: error.message }, true);
+            }
+        }
+
+        async function testGetEspecialidades() {
+            try {
+                const response = await fetch(`${API_URL}/especialidades`);
+                const data = await response.json();
+                showResult('especialidadesResult', data, !response.ok);
+            } catch (error) {
+                showResult('especialidadesResult', { error: error.message }, true);
+            }
+        }
+
+        async function testCreateEspecialidad() {
+            const especialidad = {
+                nombre: 'Cardiología',
+                descripcion: 'Especialidad en enfermedades del corazón'
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/especialidades`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(especialidad)
+                });
+                const data = await response.json();
+                showResult('especialidadesResult', data, !response.ok);
+            } catch (error) {
+                showResult('especialidadesResult', { error: error.message }, true);
+            }
+        }
+
+        async function testGetHabitaciones() {
+            try {
+                const response = await fetch(`${API_URL}/habitaciones`);
+                const data = await response.json();
+                showResult('habitacionesResult', data, !response.ok);
+            } catch (error) {
+                showResult('habitacionesResult', { error: error.message }, true);
+            }
+        }
+
+        async function testCreateHabitacion() {
+            const habitacion = {
+                numero: '101',
+                tipo: 'general',
+                estado: 'disponible'
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/habitaciones`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(habitacion)
+                });
+                const data = await response.json();
+                showResult('habitacionesResult', data, !response.ok);
+            } catch (error) {
+                showResult('habitacionesResult', { error: error.message }, true);
+            }
+        }
+
+        // Test automático al cargar la página
+        window.onload = function() {
+            testConnection();
+        };
+    </script>
+</body>
+</html>
